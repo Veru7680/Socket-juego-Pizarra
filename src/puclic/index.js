@@ -48,15 +48,33 @@ function init() {
     });
 
     // Funciones para el dibujo con el mouse
-    canvas.addEventListener('mousedown', () => (mouse.click = true));
-    canvas.addEventListener('mouseup', () => (mouse.click = false));
-
     canvas.addEventListener('mousemove', (e) => {
-        const rect = canvas.getBoundingClientRect();
-        mouse.pos.x = (e.clientX - rect.left) / canvas.width;
-        mouse.pos.y = (e.clientY - rect.top) / canvas.height;
-        mouse.move = true;
-    });
+      const rect = canvas.getBoundingClientRect(); // Obtiene las coordenadas del canvas en la pantalla
+      // Calcula las coordenadas dentro del canvas, usando el tamaño real
+      mouse.pos.x = (e.clientX - rect.left) / rect.width;  // Calcula la posición en relación con el tamaño real
+      mouse.pos.y = (e.clientY - rect.top) / rect.height;  // Calcula la posición en relación con el tamaño real
+      mouse.move = true;
+  });
+  
+  canvas.addEventListener('mousedown', (e) => {
+      mouse.click = true;
+      const rect = canvas.getBoundingClientRect();  // Cálculo preciso de la posición
+      // Calcula las coordenadas relativas al canvas con el tamaño correcto
+      mouse.pos.x = (e.clientX - rect.left) / rect.width;
+      mouse.pos.y = (e.clientY - rect.top) / rect.height;
+  });
+  
+  canvas.addEventListener('mouseup', () => {
+      mouse.click = false;
+  });
+  function resizeCanvas() {
+   const canvasContainer = document.getElementById('canvas-container');
+   canvas.width = canvasContainer.clientWidth;
+   canvas.height = canvasContainer.clientHeight - 40; // Ajusta por el botón o margen
+}
+
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas(); // Llama a resizeCanvas cuando se carga la página por primera vez
 
     function mainLoop() {
         if (mouse.click && mouse.move && mouse.pos_prev) {
