@@ -17,3 +17,4 @@ require('./sockets')(io);
 server.listen(app.get('port'),()=>{
     console.log('server puerto 3000');
 })
+

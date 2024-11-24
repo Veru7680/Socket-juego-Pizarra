@@ -3,11 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Canvas y Chat</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <canvas id="drawing" ></canvas>
-   <script src="/socket.io/socket.io.js"></script>
+    <div id="app">
+        <div id="canvas-container">
+            <button>Borrar</button>
+            <canvas id="drawing"></canvas>
+        </div>
+        <div id="chat-container">
+            <div id="chat-window">
+                <div id="output"></div>
+                <div id="actions"></div>
+            </div>
+            <input type="text" id="username" placeholder="Username">
+            <input type="text" id="message" placeholder="Message">
+            <button id="send">Send</button>
+        </div>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
     <script src="/index.js"></script>
 </body>
 </html>

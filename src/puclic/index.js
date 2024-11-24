@@ -1,69 +1,73 @@
-function init(){
-let mouse={
-    click: false,
-    move: false,
-    pos: {x:0  , y:0},
-    pos_prev:false
+function init() {
+   let mouse = {
+       click: false,
+       move: false,
+       pos: { x: 0, y: 0 },
+       pos_prev: false
+   };
 
-};
- //canvas
- const canvas=document.getElementById('drawing');
- const context = canvas.getContext('2d');
+   // Canvas
+   const canvas = document.getElementById('drawing');
+   const context = canvas.getContext('2d');
 
- //alt y ancho
- const width = window.innerWidth;
- const height =window.innerHeight;
+   function resizeCanvas() {
+       canvas.width = document.getElementById('canvas-container').clientWidth;
+       canvas.height = document.getElementById('canvas-container').clientHeight - 40; // Ajusta por el botón
+   }
 
- canvas.width =width;
- canvas.height= height;
+   resizeCanvas();
+   window.addEventListener('resize', resizeCanvas);
 
- const socket = io();
+   const socket = io();
 
- canvas.addEventListener('mousedown',(e)=>{
-    mouse.click =true;
-   
- });
+   canvas.addEventListener('mousedown', () => (mouse.click = true));
+   canvas.addEventListener('mouseup', () => (mouse.click = false));
 
- canvas.addEventListener('mouseup', (e)=>{
-mouse.click= false;
-console.log(mouse);
- });
+   canvas.addEventListener('mousemove', (e) => {
+       const rect = canvas.getBoundingClientRect();
+       mouse.pos.x = (e.clientX - rect.left) / canvas.width;
+       mouse.pos.y = (e.clientY - rect.top) / canvas.height;
+       mouse.move = true;
+   });
 
- //evento de capturar cuando el usuario se mueve dentro del canva
+   socket.on('draw_line', (data) => {
+       const line = data.line;
+       context.beginPath();
+       context.lineWidth = 2;
+       context.moveTo(line[0].x * canvas.width, line[0].y * canvas.height);
+       context.lineTo(line[1].x * canvas.width, line[1].y * canvas.height);
+       context.stroke();
+   });
 
- canvas.addEventListener('mousemove', (e)=>{
-    mouse.pos.x=e.clientX / width;
-    mouse.pos.y=e.clientY / height;
-    mouse.move=true;
-   
-     });
-
-     //lineas con los datos de X y Y de draw line
-     socket.on('draw_line', data =>{
-      const line= data.line;
-
-      context.beginPath();
-      context.lineWith=2;
-      context.moveTo(line[0].x * width, line[0].y * height);
-      context.lineTo(line[1].x * width, line[1].y * height);
-
-      context.stroke();
-     });
-
-
-
-
-     function mainLoop(){
-     if(mouse.click && mouse.move && mouse.pos_prev){
-        //conexion web socket 
-        socket.emit('draw_line', {line:[mouse.pos, mouse.pos_prev]});
-        mouse.move= false;
-     }
-     mouse.pos_prev={x:mouse.pos.x, y :mouse.pos.y};
-setTimeout(mainLoop, 25);
-    } 
-    mainLoop();
-
+   function mainLoop() {
+       if (mouse.click && mouse.move && mouse.pos_prev) {
+           socket.emit('draw_line', { line: [mouse.pos, mouse.pos_prev] });
+           mouse.move = false;
+       }
+       mouse.pos_prev = { x: mouse.pos.x, y: mouse.pos.y };
+       setTimeout(mainLoop, 25);
+   }
+   mainLoop();
 }
 
-document.addEventListener('DOMContentLoaded',init);
+document.addEventListener('DOMContentLoaded', init);
+
+//CHAT
+btn.addEventListener('click', function (){
+    socket.emit('chat:message', {
+        username:username.value,
+        message:message.value
+    });
+});
+
+message.addEventListener('keypress', function(){
+    socket.emit('chat:typing', username.value)
+})
+
+socket.on('chat:message', function(data){
+    output.innerHTML += `<p><strong>${data.username}</strong>:${data.message}</p>`
+});
+
+socket.on('chat:typing', function(data){
+    actions.innerHTML =  `<p><em>${data} is typing a message rigth now</em></p>` 
+})
