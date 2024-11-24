@@ -17,7 +17,7 @@ let mouse={
  canvas.width =width;
  canvas.heigth= heigth;
 
- io();
+ const socket = io();
 
  canvas.addEventListener('mousedown',(e)=>{
     mouse.click =true;
@@ -38,12 +38,18 @@ console.log(mouse);
    
      });
 
+
+
+
      function mainLoop(){
      if(mouse.click && mouse.move && mouse.pos_prev){
         //conexion web socket 
+        socket.emit('draw_line', {line:[mouse.pos, mouse.pos_prev]});
+        mouse.move= false;
      }
+     mouse.pos_prev={x:mouse.pos.x, y :mouse.pos.y};
 setTimeout(mainLoop, 25);
-    }
+    } 
     mainLoop();
 
 }
