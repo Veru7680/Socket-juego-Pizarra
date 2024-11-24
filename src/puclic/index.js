@@ -1,84 +1,92 @@
-const socket = io()
+const socket = io();
 
 //DOM
-let message = document.getElementById('message')
-let username = document.getElementById('username')
-let btn = document.getElementById('send')
-let output = document.getElementById('output')
-let actions = document.getElementById('actions')
-
+let message = document.getElementById('message');
+let username = document.getElementById('username');
+let btn = document.getElementById('send');
+let output = document.getElementById('output');
+let actions = document.getElementById('actions');
+let clearBtn = document.getElementById('clear'); // Botón de borrar
 
 function init() {
-   let mouse = {
-       click: false,
-       move: false,
-       pos: { x: 0, y: 0 },
-       pos_prev: false
-   };
+    let mouse = {
+        click: false,
+        move: false,
+        pos: { x: 0, y: 0 },
+        pos_prev: false
+    };
 
-   // Canvas
-   const canvas = document.getElementById('drawing');
-   const context = canvas.getContext('2d');
+    // Canvas
+    const canvas = document.getElementById('drawing');
+    const context = canvas.getContext('2d');
 
-   function resizeCanvas() {
-       canvas.width = document.getElementById('canvas-container').clientWidth;
-       canvas.height = document.getElementById('canvas-container').clientHeight - 40; // Ajusta por el botón
-   }
+    function resizeCanvas() {
+        canvas.width = document.getElementById('canvas-container').clientWidth;
+        canvas.height = document.getElementById('canvas-container').clientHeight - 40; // Ajusta por el botón
+    }
 
-   resizeCanvas();
-   window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
 
-   const socket = io();
+    socket.on('draw_line', (data) => {
+        const line = data.line;
+        context.beginPath();
+        context.lineWidth = 2;
+        context.moveTo(line[0].x * canvas.width, line[0].y * canvas.height);
+        context.lineTo(line[1].x * canvas.width, line[1].y * canvas.height);
+        context.stroke();
+    });
 
-   canvas.addEventListener('mousedown', () => (mouse.click = true));
-   canvas.addEventListener('mouseup', () => (mouse.click = false));
+    // Limpiar canvas (cuando el servidor emite el evento)
+    socket.on('clear_canvas', () => {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+    });
 
-   canvas.addEventListener('mousemove', (e) => {
-       const rect = canvas.getBoundingClientRect();
-       mouse.pos.x = (e.clientX - rect.left) / canvas.width;
-       mouse.pos.y = (e.clientY - rect.top) / canvas.height;
-       mouse.move = true;
-   });
+    // Evento de clic en el botón de "Borrar"
+    clearBtn.addEventListener('click', () => {
+        socket.emit('clear_canvas');
+    });
 
-   socket.on('draw_line', (data) => {
-       const line = data.line;
-       context.beginPath();
-       context.lineWidth = 2;
-       context.moveTo(line[0].x * canvas.width, line[0].y * canvas.height);
-       context.lineTo(line[1].x * canvas.width, line[1].y * canvas.height);
-       context.stroke();
-   });
+    // Funciones para el dibujo con el mouse
+    canvas.addEventListener('mousedown', () => (mouse.click = true));
+    canvas.addEventListener('mouseup', () => (mouse.click = false));
 
-   function mainLoop() {
-       if (mouse.click && mouse.move && mouse.pos_prev) {
-           socket.emit('draw_line', { line: [mouse.pos, mouse.pos_prev] });
-           mouse.move = false;
-       }
-       mouse.pos_prev = { x: mouse.pos.x, y: mouse.pos.y };
-       setTimeout(mainLoop, 25);
-   }
-   mainLoop();
+    canvas.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        mouse.pos.x = (e.clientX - rect.left) / canvas.width;
+        mouse.pos.y = (e.clientY - rect.top) / canvas.height;
+        mouse.move = true;
+    });
+
+    function mainLoop() {
+        if (mouse.click && mouse.move && mouse.pos_prev) {
+            socket.emit('draw_line', { line: [mouse.pos, mouse.pos_prev] });
+            mouse.move = false;
+        }
+        mouse.pos_prev = { x: mouse.pos.x, y: mouse.pos.y };
+        setTimeout(mainLoop, 25);
+    }
+    mainLoop();
 }
 
 document.addEventListener('DOMContentLoaded', init);
 
-//CHAT
-btn.addEventListener('click', function (){
+// CHAT
+btn.addEventListener('click', function () {
     socket.emit('chat:message', {
-        username:username.value,
-        message:message.value
+        username: username.value,
+        message: message.value
     });
 });
 
-message.addEventListener('keypress', function(){
+message.addEventListener('keypress', function () {
     socket.emit('chat:typing', username.value)
-})
+});
 
-socket.on('chat:message', function(data){
+socket.on('chat:message', function (data) {
     output.innerHTML += `<p><strong>${data.username}</strong>:${data.message}</p>`
 });
 
-socket.on('chat:typing', function(data){
-    actions.innerHTML =  `<p><em>${data} is typing a message rigth now</em></p>` 
-})
-
+socket.on('chat:typing', function (data) {
+    actions.innerHTML = `<p><em>${data} is typing a message right now</em></p>`
+});
