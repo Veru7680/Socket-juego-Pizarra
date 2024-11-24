@@ -38,6 +38,18 @@ console.log(mouse);
    
      });
 
+     //lineas con los datos de X y Y de draw line
+     socket.on('draw_line', data =>{
+      const line= data.line;
+
+      context.beginPath();
+      context.lineWith=2;
+      context.moveTo(line[0].x * width, line[0].y * heigth);
+      context.lineTo(line[1].x * width, line[1].y * heigth);
+
+      context.stroke();
+     });
+
 
 
 
