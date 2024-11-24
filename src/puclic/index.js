@@ -1,3 +1,13 @@
+const socket = io()
+
+//DOM
+let message = document.getElementById('message')
+let username = document.getElementById('username')
+let btn = document.getElementById('send')
+let output = document.getElementById('output')
+let actions = document.getElementById('actions')
+
+
 function init() {
    let mouse = {
        click: false,
@@ -71,3 +81,4 @@ socket.on('chat:message', function(data){
 socket.on('chat:typing', function(data){
     actions.innerHTML =  `<p><em>${data} is typing a message rigth now</em></p>` 
 })
+
