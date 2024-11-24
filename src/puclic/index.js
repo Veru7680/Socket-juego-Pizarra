@@ -12,10 +12,10 @@ let mouse={
 
  //alt y ancho
  const width = window.innerWidth;
- const heigth =window.innerHeight;
+ const height =window.innerHeight;
 
  canvas.width =width;
- canvas.heigth= heigth;
+ canvas.height= height;
 
  const socket = io();
 
@@ -33,7 +33,7 @@ console.log(mouse);
 
  canvas.addEventListener('mousemove', (e)=>{
     mouse.pos.x=e.clientX / width;
-    mouse.pos.y=e.clientY / heigth;
+    mouse.pos.y=e.clientY / height;
     mouse.move=true;
    
      });
@@ -44,8 +44,8 @@ console.log(mouse);
 
       context.beginPath();
       context.lineWith=2;
-      context.moveTo(line[0].x * width, line[0].y * heigth);
-      context.lineTo(line[1].x * width, line[1].y * heigth);
+      context.moveTo(line[0].x * width, line[0].y * height);
+      context.lineTo(line[1].x * width, line[1].y * height);
 
       context.stroke();
      });
